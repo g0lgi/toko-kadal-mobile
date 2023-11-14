@@ -1,3 +1,292 @@
+# Tugas 8
+## Jelaskan perbedaan antara Navigator.push() dan Navigator.pushReplacement(), disertai dengan contoh mengenai penggunaan kedua metode tersebut yang tepat!
+`Navigator.push()` digunakan untuk menavigasi ke screen baru, sekaligus menyimpan screen saat ini di stack. Artinya jika tombol kembali ditekan, kita akan kembali ke screen sebelumnya. Berikut ini contoh penggunaannya:
+
+```
+Navigator.push(
+  context,
+  MaterialPageRoute(builder: (context) => NewScreen()),
+);
+```
+
+`Navigator.pushReplacement()` juga digunakan untuk menavigasi ke screen baru, namun **mengganti** screen saat ini di stack dengan yang baru. Artinya jika tombol back ditekan, kita tidak akan kembali ke screen sebelumnya, karena sudah diganti. Berikut ini contoh penggunaannya:
+
+```
+Navigator.pushReplacement(
+  context,
+  MaterialPageRoute(builder: (context) => NewScreen()),
+);
+```
+
+Singkatnya, perbedaan utamanya adalah `Navigator.push()` mempertahankan screen lama di stack (memungkinkan kita kembali ke sana), sementara `Navigator.pushReplacement()` menghapus screen lama dari stack.
+
+## Jelaskan masing-masing layout widget pada Flutter dan konteks penggunaannya masing-masing!
+Di Flutter, ada dua jenis layout widget utama: Single-child layout widgets dan Multi-child layout widgets. Berikut penjelasan singkat tentang beberapa yang paling umum digunakan:
+**Single-child layout widgets**:
+- `Container`: Widget  yang menggabungkan widget painting, positioning, dan sizing.
+- `Padding`: Menyisipkan child nya berdasarkan padding yang diberikan.
+- `Align`: Menyejajarkan child nya dengan dirinya sendiri
+- `Center`: Memusatkan child nya ke dalam dirinya sendiri.
+- `SizedBox`: Kotak dengan ukuran tertentu.
+
+**Multi-child layout widgets**:
+- `Row`: Menata child widgets secara horizontal.
+- `Column`: Menata child widgets secara vertikal.
+- `Stack`: Overlap beberapa child widget
+- `ListView`: Daftar widget yang dapat discroll.
+- `GridView`: Daftar grid terdiri dari pola sel berulang yang disusun dalam tata letak vertikal dan horizontal.
+
+## Sebutkan apa saja elemen input pada form yang kamu pakai pada tugas kali ini dan jelaskan mengapa kamu menggunakan elemen input tersebut!
+Saya menggunakan `TextFormField` karena semua atribut produk saya, yaitu: nama, deskripsi, dan harga semuanya berupa string, maka `TextFormField` cocok karena saya membutuhkan cara untuk menginput string bebas.
+
+## Bagaimana penerapan clean architecture pada aplikasi Flutter?
+Menerapkan arsitektur bersih dalam aplikasi Flutter melibatkan penataan kode menjadi beberapa lapisan dengan tanggung jawab berbeda, contohnya di aplikasi saya adalah `screens` dan `widgets`. Ini meningkatkan kerapihan kode, kemampuan testing, dan maintanability.
+
+## Jelaskan bagaimana cara kamu mengimplementasikan checklist di atas secara step-by-step!
+### Membuat Halaman Form untuk Tambah Item Baru
+Saya membuat file `shoplist_form.dart` di folder `screens` lalu menambahkan kode berikut:
+```
+import 'package:flutter/material.dart';
+import 'package:toko_kadal_mobile/widgets/left_drawer.dart';
+
+class ShopFormPage extends StatefulWidget {
+  const ShopFormPage({super.key});
+
+  @override
+  State<ShopFormPage> createState() => _ShopFormPageState();
+}
+
+class _ShopFormPageState extends State<ShopFormPage> {
+  final _formKey = GlobalKey<FormState>();
+  String _name = "";
+  int _price = 0;
+  String _description = "";
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Center(
+          child: Text(
+            'Form Tambah Produk',
+          ),
+        ),
+        backgroundColor: Colors.indigo,
+        foregroundColor: Colors.white,
+      ),
+      drawer: LeftDrawer(),
+      body: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          child:
+          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextFormField(
+                decoration: InputDecoration(
+                  hintText: "Nama Produk",
+                  labelText: "Nama Produk",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(5.0),
+                  ),
+                ),
+                onChanged: (String? value) {
+                  setState(() {
+                    _name = value!;
+                  });
+                },
+                validator: (String? value) {
+                  if (value == null || value.isEmpty) {
+                    return "Nama tidak boleh kosong!";
+                  }
+                  return null;
+                },
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextFormField(
+                decoration: InputDecoration(
+                  hintText: "Harga",
+                  labelText: "Harga",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(5.0),
+                  ),
+                ),
+                onChanged: (String? value) {
+                  setState(() {
+                    _price = int.parse(value!);
+                  });
+                },
+                validator: (String? value) {
+                  if (value == null || value.isEmpty) {
+                    return "Harga tidak boleh kosong!";
+                  }
+                  if (int.tryParse(value) == null) {
+                    return "Harga harus berupa angka!";
+                  }
+                  return null;
+                },
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextFormField(
+                decoration: InputDecoration(
+                  hintText: "Deskripsi",
+                  labelText: "Deskripsi",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(5.0),
+                  ),
+                ),
+                onChanged: (String? value) {
+                  setState(() {
+                    _description = value!;
+                  });
+                },
+                validator: (String? value) {
+                  if (value == null || value.isEmpty) {
+                    return "Deskripsi tidak boleh kosong!";
+                  }
+                  return null;
+                },
+              ),
+            ),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: ElevatedButton(
+                  style: ButtonStyle(
+                    backgroundColor:
+                    MaterialStateProperty.all(Colors.indigo),
+                  ),
+                  onPressed: () {
+                    if (_formKey.currentState!.validate()) {
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            title: const Text('Produk berhasil tersimpan'),
+                            content: SingleChildScrollView(
+                              child: Column(
+                                crossAxisAlignment:
+                                CrossAxisAlignment.start,
+                                children: [
+                                  Text('Nama: $_name'),
+                                  Text('Harga: $_price'),
+                                  Text('Deskripsi: $_description')
+                                ],
+                              ),
+                            ),
+                            actions: [
+                              TextButton(
+                                child: const Text('OK'),
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                      _formKey.currentState!.reset();
+                    }
+                  },
+                  child: const Text(
+                    "Save",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ),
+            ),
+          ]),
+        ),
+      ),
+    );
+  }
+}
+```
+Lalu tambahkan potongan kode ini pada `ontap()` di `shop_card.dart`:
+```
+onTap: () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => ShopFormPage()));
+            },
+```
+untuk mengarahkan pengguna ke halaman form tambah item baru ketika menekan tombol Tambah Item pada halaman utama.
+
+### Menambahkan Drawer Menu
+Saya membuat file `left_drawer.dart` di folder `widgets` lalu menambahkan kode berikut:
+```
+import 'package:flutter/material.dart';
+import 'package:toko_kadal_mobile/screens/menu.dart';
+import 'package:toko_kadal_mobile/screens/shoplist_form.dart';
+
+
+class LeftDrawer extends StatelessWidget {
+  const LeftDrawer({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Drawer(
+      child: ListView(
+        children: [
+          const DrawerHeader(
+            decoration: BoxDecoration(
+              color: Colors.indigo,
+            ),
+            child: Column(
+              children: [
+                Text(
+                  'Shopping List',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                Padding(padding: EdgeInsets.all(10)),
+                Text("Catat seluruh keperluan belanjamu di sini!",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      fontSize: 15,
+                      color: Colors.white,
+                      fontWeight: FontWeight.normal
+                  ),
+                ),
+              ],
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.home_outlined),
+            title: const Text('Halaman Utama'),
+            // Bagian redirection ke MyHomePage
+            onTap: () {
+              Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => MyHomePage(),
+                  ));
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.add_shopping_cart),
+            title: const Text('Tambah Produk'),
+            // Bagian redirection ke ShopFormPage
+            onTap: () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => ShopFormPage()));
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+```
+
 # Tugas 7
 ## Apa perbedaan utama antara stateless dan stateful widget dalam konteks pengembangan aplikasi Flutter?
 **Stateless Widget**:
