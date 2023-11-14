@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:toko_kadal_mobile/menu.dart';
+import 'package:toko_kadal_mobile/screens/menu.dart';
 
 void main() {
   runApp(const MyApp());
