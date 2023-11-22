@@ -1,5 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:provider/provider.dart';
 import 'package:toko_kadal_mobile/widgets/left_drawer.dart';
+
+import 'menu.dart';
 
 class ShopFormPage extends StatefulWidget {
   const ShopFormPage({super.key});
@@ -13,9 +19,11 @@ class _ShopFormPageState extends State<ShopFormPage> {
   String _name = "";
   int _price = 0;
   String _description = "";
+  int _amount = 0;
 
   @override
   Widget build(BuildContext context) {
+    final request = context.watch<CookieRequest>();
     return Scaffold(
       appBar: AppBar(
         title: const Center(
@@ -85,6 +93,32 @@ class _ShopFormPageState extends State<ShopFormPage> {
               padding: const EdgeInsets.all(8.0),
               child: TextFormField(
                 decoration: InputDecoration(
+                  hintText: "Jumlah",
+                  labelText: "Jumlah",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(5.0),
+                  ),
+                ),
+                onChanged: (String? value) {
+                  setState(() {
+                    _amount = int.parse(value!);
+                  });
+                },
+                validator: (String? value) {
+                  if (value == null || value.isEmpty) {
+                    return "Jumlah tidak boleh kosong!";
+                  }
+                  if (int.tryParse(value) == null) {
+                    return "Jumlah harus berupa angka!";
+                  }
+                  return null;
+                },
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextFormField(
+                decoration: InputDecoration(
                   hintText: "Deskripsi",
                   labelText: "Deskripsi",
                   border: OutlineInputBorder(
@@ -113,38 +147,37 @@ class _ShopFormPageState extends State<ShopFormPage> {
                     backgroundColor:
                     MaterialStateProperty.all(Colors.indigo),
                   ),
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      showDialog(
-                        context: context,
-                        builder: (context) {
-                          return AlertDialog(
-                            title: const Text('Produk berhasil tersimpan'),
-                            content: SingleChildScrollView(
-                              child: Column(
-                                crossAxisAlignment:
-                                CrossAxisAlignment.start,
-                                children: [
-                                  Text('Nama: $_name'),
-                                  Text('Harga: $_price'),
-                                  Text('Deskripsi: $_description')
-                                ],
-                              ),
-                            ),
-                            actions: [
-                              TextButton(
-                                child: const Text('OK'),
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                },
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                      _formKey.currentState!.reset();
-                    }
-                  },
+                    onPressed: () async {
+              if (_formKey.currentState!.validate()) {
+              // Kirim ke Django dan tunggu respons
+              // TODO: Ganti URL dan jangan lupa tambahkan trailing slash (/) di akhir URL!
+              final response = await request.postJson(
+              "http://localhost:8000/create-flutter/",
+              jsonEncode(<String, String>{
+              'name': _name,
+              'price': _price.toString(),
+              'description': _description,
+                'amount': _amount.toString(),
+              // TODO: Sesuaikan field data sesuai dengan aplikasimu
+              }));
+              if (response['status'] == 'success') {
+              ScaffoldMessenger.of(context)
+                  .showSnackBar(const SnackBar(
+              content: Text("Produk baru berhasil disimpan!"),
+              ));
+              Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => MyHomePage()),
+              );
+              } else {
+              ScaffoldMessenger.of(context)
+                  .showSnackBar(const SnackBar(
+              content:
+              Text("Terdapat kesalahan, silakan coba lagi."),
+              ));
+              }
+              }
+              },
                   child: const Text(
                     "Save",
                     style: TextStyle(color: Colors.white),

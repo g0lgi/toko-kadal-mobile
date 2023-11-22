@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:toko_kadal_mobile/screens/menu.dart';
 import 'package:toko_kadal_mobile/screens/shoplist_form.dart';
 
+import '../screens/list_product.dart';
+
 
 class LeftDrawer extends StatelessWidget {
   const LeftDrawer({super.key});
@@ -57,6 +59,17 @@ class LeftDrawer extends StatelessWidget {
             onTap: () {
               Navigator.push(context,
                   MaterialPageRoute(builder: (context) => ShopFormPage()));
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.shopping_basket),
+            title: const Text('Daftar Produk'),
+            onTap: () {
+              // Route menu ke halaman produk
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ProductPage()),
+              );
             },
           ),
         ],
