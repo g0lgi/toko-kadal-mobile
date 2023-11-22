@@ -1,3 +1,130 @@
+# Tugas 9
+## Apakah bisa kita melakukan pengambilan data JSON tanpa membuat model terlebih dahulu? 
+Ya, dengan menggunakan map di Dart.
+### Jika iya, apakah hal tersebut lebih baik daripada membuat model sebelum melakukan pengambilan data JSON?
+Apakah lebih baik membuat model sebelum mengambil data JSON atau tidak bergantung pada use case. Jika kita sudah mengetahui struktur data JSON sebelumnya, membuat model dapat mempermudah pengerjaan data. Namun, jika struktur data JSON tidak diketahui atau dinamis, penguraiannya secara dinamis menggunakan json.decode() di Flutter bisa lebih mudah.
+
+## Fungsi dari CookieRequest dan mengapa instance CookieRequest perlu untuk dibagikan ke semua komponen di aplikasi Flutter.
+Sepengetahuan saya setelah membaca class CookieRequest, sepertinya CookieRequest menyediakan fungsionalitas yang dibutuhkan untuk mengimplementasikan autentikasi dari Django di Flutter, seperti contohnya method untuk mengirim HTTP request ke Django dan untuk memanage cookies. Instance CookieRequest perlu untuk dibagikan ke semua komponen di aplikasi Flutter untuk memastikan bahwa status autentikasi dan cookies konsisten di seluruh app kita.
+
+## Mekanisme pengambilan data dari JSON hingga dapat ditampilkan pada Flutter.
+Untuk mengambil data dari file JSON di Flutter, kita dapat menggunakan method `json.decode()` yang disediakan oleh library `dart:convert`. Metode ini mengambil string JSON sebagai input dan return objek dinamis yang mewakili data JSON yang telah di parse. Kemudian kita dapat mengakses properti objek JSON menggunakan dot notation atau square bracket notation. Untuk menampilkan data, contohnya dapat menggunakan ListView.builder
+
+## Mekanisme autentikasi dari input data akun pada Flutter ke Django hingga selesainya proses autentikasi oleh Django dan tampilnya menu pada Flutter.
+User menginput username dan password pada `LoginPage`, dan saat tombol login diclick, sebuah HTTP request terkirim dengan endpoint URL proyek Django. Django melakukan verifikasi pada data tersebut, lalu mengirimkan token pada Flutter, yang lalu memberikan response yang sesuai.
+
+## Sebutkan seluruh widget yang kamu pakai pada tugas ini dan jelaskan fungsinya masing-masing.
+- **FutureBuilder**: Widget yang membangun dirinya sendiri berdasarkan cuplikan terkini dari masa depan. Digunakan untuk menampilkan data dari sumber asynchronous, seperti layanan web.
+- **ListView**: Widget yang menampilkan daftar yang dapat di-scroll, baik secara horizontal maupun vertikal. Digunakan untuk menampilkan banyak item dalam tata letak linier.
+- **TextField**: Widget yang menampilkan kolom teks yang dapat diedit, biasanya dengan label, ikon, dan petunjuk. Digunakan untuk menerima input pengguna.
+- **ElevatedButton**: Widget yang menampilkan tombol timbul, biasanya dengan label teks dan ikon. Digunakan untuk melakukan suatu tindakan saat ditekan.
+- **SnackBar**: Widget yang menampilkan pesan singkat di bagian bawah layar, biasanya disertai action. Digunakan untuk memberikan feedback kepada pengguna.
+
+## Jelaskan bagaimana cara kamu mengimplementasikan checklist di atas secara step-by-step
+### Membuat halaman login pada proyek tugas Flutter.
+Saya membuat sebuah app baru bernama `authentication` di Django, lalu membuat fungsi login pada `views.py` nya, dengan memanfaatkan `pbp_django_auth`. Lalu saya membuat halaman login di dart.
+
+## Membuat model kustom sesuai dengan proyek aplikasi Django.
+Saya memanfaatkan Quicktype untuk mengconvert database JSON di proyek Django menjadi Dart
+
+## Membuat halaman yang berisi daftar semua item yang terdapat pada endpoint JSON di Django yang telah kamu deploy.
+Saya membuat file baru di `screens` bernama `list_view.dart`, yang berisi kode berikut:
+```
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:toko_kadal_mobile/models/product.dart';
+import 'package:toko_kadal_mobile/widgets/left_drawer.dart';
+
+class ProductPage extends StatefulWidget {
+  const ProductPage({Key? key}) : super(key: key);
+
+  @override
+  _ProductPageState createState() => _ProductPageState();
+}
+
+class _ProductPageState extends State<ProductPage> {
+  Future<List<Product>> fetchProduct() async {
+    // TODO: Ganti URL dan jangan lupa tambahkan trailing slash (/) di akhir URL!
+    var url = Uri.parse(
+        'http://localhost:8000/json/');
+    var response = await http.get(
+      url,
+      headers: {"Content-Type": "application/json"},
+    );
+
+    // melakukan decode response menjadi bentuk json
+    var data = jsonDecode(utf8.decode(response.bodyBytes));
+
+    // melakukan konversi data json menjadi object Product
+    List<Product> list_product = [];
+    for (var d in data) {
+      if (d != null) {
+        list_product.add(Product.fromJson(d));
+      }
+    }
+    return list_product;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(
+          title: const Text('Product'),
+        ),
+        drawer: const LeftDrawer(),
+        body: FutureBuilder(
+            future: fetchProduct(),
+            builder: (context, AsyncSnapshot snapshot) {
+              if (snapshot.data == null) {
+                return const Center(child: CircularProgressIndicator());
+              } else {
+                if (!snapshot.hasData) {
+                  return const Column(
+                    children: [
+                      Text(
+                        "Tidak ada data produk.",
+                        style:
+                        TextStyle(color: Color(0xff59A5D8), fontSize: 20),
+                      ),
+                      SizedBox(height: 8),
+                    ],
+                  );
+                } else {
+                  return ListView.builder(
+                      itemCount: snapshot.data!.length,
+                      itemBuilder: (_, index) => Container(
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 12),
+                        padding: const EdgeInsets.all(20.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "${snapshot.data![index].fields.name}",
+                              style: const TextStyle(
+                                fontSize: 18.0,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Text("${snapshot.data![index].fields.price}"),
+                            const SizedBox(height: 10),
+                            Text(
+                                "${snapshot.data![index].fields.description}")
+                          ],
+                        ),
+                      ));
+                }
+              }
+            }));
+  }
+}
+```
+Lalu membuat agar ketika tombol lihat produk di `left_drawer.dart` dan `menu.dart` mengarah kesitu
+
+
 # Tugas 8
 ## Jelaskan perbedaan antara Navigator.push() dan Navigator.pushReplacement(), disertai dengan contoh mengenai penggunaan kedua metode tersebut yang tepat!
 `Navigator.push()` digunakan untuk menavigasi ke screen baru, sekaligus menyimpan screen saat ini di stack. Artinya jika tombol kembali ditekan, kita akan kembali ke screen sebelumnya. Berikut ini contoh penggunaannya:
