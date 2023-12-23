@@ -5,9 +5,9 @@ import 'package:toko_kadal_mobile/widgets/shop_card.dart';
 class MyHomePage extends StatelessWidget {
   MyHomePage({Key? key}) : super(key: key);
   final List<ShopItem> items = [
-    ShopItem("Lihat Produk", Icons.checklist, Color(0xFF9A9F78)),
-    ShopItem("Tambah Produk", Icons.add_shopping_cart, Color(0xFFC2C0A2)),
-    ShopItem("Logout", Icons.logout, Color(0xFFE9E1CC)),
+    ShopItem("Lihat Produk", Icons.checklist, Color(0xFF9A9F78), 1),
+    ShopItem("Tambah Produk", Icons.add_shopping_cart, Color(0xFFC2C0A2), 2),
+    ShopItem("Logout", Icons.logout, Color(0xFFE9E1CC), 3),
   ];
 
   // This widget is the home page of your application. It is stateful, meaning

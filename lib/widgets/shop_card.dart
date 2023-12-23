@@ -67,6 +67,12 @@ class ShopCard extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                Text(
+                  item.number.toString(),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.white),
+                ),
+                const Padding(padding: EdgeInsets.all(3)),
                 Icon(
                   item.icon,
                   color: Colors.white,
@@ -91,6 +97,6 @@ class ShopItem {
   final String name;
   final IconData icon;
   final Color color;
-
-  ShopItem(this.name, this.icon, this.color);
+  final int number;
+  ShopItem(this.name, this.icon, this.color, this.number);
 }
